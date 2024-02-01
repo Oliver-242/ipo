@@ -52,7 +52,7 @@ class Item:
 
 class Pairwise:
     """
-    A class aiming to generate a pair
+    A class aims to generate a pairwise testing set using in-parameter-order (IPO) algorithm
     """
     def __init__(self, parameters, n=2):
         self.__validate_param(parameters)

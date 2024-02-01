@@ -54,6 +54,7 @@ class Pairwise:
     """
     A class aims to generate a pairwise testing set using in-parameter-order (IPO) algorithm
     """
+    # TODO: currently only supports 2-wise, waiting for completing n-wise
     def __init__(self, parameters, n=2):
         self.__validate_param(parameters)
         self._n = n

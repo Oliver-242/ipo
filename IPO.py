@@ -52,17 +52,15 @@ class Item:
 
 class Pairwise:
     """
-    A class aims to generate a pairwise testing set using in-parameter-order (IPO) algorithm
+    A class aims to generate a n-wise testing set using in-parameter-order (IPO) algorithm
     """
-    # TODO: currently only supports 2-wise, waiting for completing n-wise
     def __init__(self, parameters, n=2):
-        self.__validate_param(parameters)
         self._n = n
         self.param = parameters
         self._length = len(parameters)
-        self.__result_list = []
+        self.__validate_param(self.param)
         self.__item_matrix = self.__get_item_matrix(parameters)
-        self.__item_result_list = self.__init_res_list(self.__item_matrix)
+        self.__item_result_list = self.__init_res_list()
         self.__result_list = None
         self.__v_set = set()
 
@@ -70,6 +68,8 @@ class Pairwise:
         if isinstance(parameter, list):
             if len(parameter) < 2:
                 raise ValueError("Length of parameter list should be at least two!")
+            if self._n > self._length:
+                raise ValueError("Length of parameter list should be less than n!")
             for p in parameter:
                 if not p:
                     raise ValueError("Each parameter arrays must have at least one item")
@@ -85,23 +85,24 @@ class Pairwise:
             for param_idx, value_list in enumerate(parameter_matrix)
         ]
 
-    def __init_res_list(self, parameters):
-        return list(product(parameters[0], parameters[1]))
+    def __init_res_list(self):
+        return list(product(*self.__item_matrix[:self._n]))
 
     def result(self):
-        if self._length > 2:
+        if self._length > self._n:
             self.__find_pairwise()
         self.__convert_to_res(self.__item_result_list)
 
         return self.__result_list
 
     def __find_pairwise(self):
-        for i in range(2, self._length, 1):
+        for i in range(self._n, self._length, 1):
             extend_waiting_pairs = set()
             l = len(self.__item_matrix[i])
-            for j in range(i):
-                for k in list(product(self.__item_matrix[j], self.__item_matrix[i])):
-                    extend_waiting_pairs.add(k)
+            idx_l = list(combinations([j for j in range(i)], self._n-1))
+            for j in idx_l:
+                for h in list(product(*[self.__item_matrix[k] for k in j], self.__item_matrix[i])):
+                    extend_waiting_pairs.add(h)
             self.__ipo_h_iv(extend_waiting_pairs, l, i)
             if len(extend_waiting_pairs):
                 self.__ipo_v(extend_waiting_pairs)
@@ -159,46 +160,36 @@ class Pairwise:
 
 if __name__ == "__main__":
     # 9个         3^4
-    # parameters = [['a', 'b','c'], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    # 20个        3^13
+    parameters = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    # 21个        3^13
     # parameters = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14], [15, 16, 17], [18, 19, 20], [21, 22, 23], [24, 25, 26], [27, 28, 29], [30, 31, 32], [33, 34, 35], [36, 37, 38]]
-    # 37个        4^15+3^17+2^29
+    # 38个        4^15+3^17+2^29
     # parameters = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15], [16, 17, 18, 19], [20, 21, 22, 23], [24, 25, 26, 27], [28, 29, 30, 31], [32, 33, 34, 35], [36, 37, 38, 39], [40, 41, 42, 43], [44, 45, 46, 47], [48, 49, 50, 51], [52, 53, 54, 55], [56, 57, 58, 59], [60, 61, 62], [63, 64, 65], [66, 67, 68], [69, 70, 71], [72, 73, 74], [75, 76, 77], [78, 79, 80], [81, 82, 83], [84, 85, 86], [87, 88, 89], [90, 91, 92], [93, 94, 95], [96, 97, 98], [99, 100, 101], [102, 103, 104], [105, 106, 107], [108, 109, 110], [111, 112], [113, 114], [115, 116], [117, 118], [119, 120], [121, 122], [123, 124], [125, 126], [127, 128], [129, 130], [131, 132], [133, 134], [135, 136], [137, 138], [139, 140], [141, 142], [143, 144], [145, 146], [147, 148], [149, 150], [151, 152], [153, 154], [155, 156], [157, 158], [159, 160], [161, 162], [163, 164], [165, 166], [167, 168]]
-    # 31个        4^1+3^39+2^35
+    # 32个        4^1+3^39+2^35
     # parameters = [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12], [13, 14, 15], [16, 17, 18], [19, 20, 21], [22, 23, 24], [25, 26, 27], [28, 29, 30], [31, 32, 33], [34, 35, 36], [37, 38, 39], [40, 41, 42], [43, 44, 45], [46, 47, 48], [49, 50, 51], [52, 53, 54], [55, 56, 57], [58, 59, 60], [61, 62, 63], [64, 65, 66], [67, 68, 69], [70, 71, 72], [73, 74, 75], [76, 77, 78], [79, 80, 81], [82, 83, 84], [85, 86, 87], [88, 89, 90], [91, 92, 93], [94, 95, 96], [97, 98, 99], [100, 101, 102], [103, 104, 105], [106, 107, 108], [109, 110, 111], [112, 113, 114], [115, 116, 117], [118, 119, 120], [127, 128], [129, 130], [131, 132], [133, 134], [135, 136], [137, 138], [139, 140], [141, 142], [143, 144], [145, 146], [147, 148], [149, 150], [151, 152], [153, 154], [155, 156], [157, 158], [159, 160], [161, 162], [163, 164], [165, 166], [167, 168], [169, 170], [171, 172], [173, 174], [175, 176], [177, 178], [179, 180], [181, 182], [183, 184], [185, 186], [187, 188], [189, 190], [191, 192], [193, 194], [195, 196]]
-    # 17个        2^100
+    # 16个        2^100
     # parameters = [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11], [12, 13], [14, 15], [16, 17], [18, 19], [20, 21], [22, 23], [24, 25], [26, 27], [28, 29], [30, 31], [32, 33], [34, 35], [36, 37], [38, 39], [40, 41], [42, 43], [44, 45], [46, 47], [48, 49], [50, 51], [52, 53], [54, 55], [56, 57], [58, 59], [60, 61], [62, 63], [64, 65], [66, 67], [68, 69], [70, 71], [72, 73], [74, 75], [76, 77], [78, 79], [80, 81], [82, 83], [84, 85], [86, 87], [88, 89], [90, 91], [92, 93], [94, 95], [96, 97], [98, 99], [100, 101], [102, 103], [104, 105], [106, 107], [108, 109], [110, 111], [112, 113], [114, 115], [116, 117], [118, 119], [120, 121], [122, 123], [124, 125], [126, 127], [128, 129], [130, 131], [132, 133], [134, 135], [136, 137], [138, 139], [140, 141], [142, 143], [144, 145], [146, 147], [148, 149], [150, 151], [152, 153], [154, 155], [156, 157], [158, 159], [160, 161], [162, 163], [164, 165], [166, 167], [168, 169], [170, 171], [172, 173], [174, 175], [176, 177], [178, 179], [180, 181], [182, 183], [184, 185], [186, 187], [188, 189], [190, 191], [192, 193], [194, 195], [196, 197], [198, 199]]
     # 267个       10^20
-    parameters = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], [20, 21, 22, 23, 24, 25, 26, 27, 28, 29], [30, 31, 32, 33, 34, 35, 36, 37, 38, 39], [40, 41, 42, 43, 44, 45, 46, 47, 48, 49], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], [60, 61, 62, 63, 64, 65, 66, 67, 68, 69], [70, 71, 72, 73, 74, 75, 76, 77, 78, 79], [80, 81, 82, 83, 84, 85, 86, 87, 88, 89], [90, 91, 92, 93, 94, 95, 96, 97, 98, 99], [100, 101, 102, 103, 104, 105, 106, 107, 108, 109], [110, 111, 112, 113, 114, 115, 116, 117, 118, 119], [120, 121, 122, 123, 124, 125, 126, 127, 128, 129], [130, 131, 132, 133, 134, 135, 136, 137, 138, 139], [140, 141, 142, 143, 144, 145, 146, 147, 148, 149], [150, 151, 152, 153, 154, 155, 156, 157, 158, 159], [160, 161, 162, 163, 164, 165, 166, 167, 168, 169], [170, 171, 172, 173, 174, 175, 176, 177, 178, 179], [180, 181, 182, 183, 184, 185, 186, 187, 188, 189], [190, 191, 192, 193, 194, 195, 196, 197, 198, 199]]
+    # parameters = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], [20, 21, 22, 23, 24, 25, 26, 27, 28, 29], [30, 31, 32, 33, 34, 35, 36, 37, 38, 39], [40, 41, 42, 43, 44, 45, 46, 47, 48, 49], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], [60, 61, 62, 63, 64, 65, 66, 67, 68, 69], [70, 71, 72, 73, 74, 75, 76, 77, 78, 79], [80, 81, 82, 83, 84, 85, 86, 87, 88, 89], [90, 91, 92, 93, 94, 95, 96, 97, 98, 99], [100, 101, 102, 103, 104, 105, 106, 107, 108, 109], [110, 111, 112, 113, 114, 115, 116, 117, 118, 119], [120, 121, 122, 123, 124, 125, 126, 127, 128, 129], [130, 131, 132, 133, 134, 135, 136, 137, 138, 139], [140, 141, 142, 143, 144, 145, 146, 147, 148, 149], [150, 151, 152, 153, 154, 155, 156, 157, 158, 159], [160, 161, 162, 163, 164, 165, 166, 167, 168, 169], [170, 171, 172, 173, 174, 175, 176, 177, 178, 179], [180, 181, 182, 183, 184, 185, 186, 187, 188, 189], [190, 191, 192, 193, 194, 195, 196, 197, 198, 199]]
 
-
-    res = Pairwise(parameters, 2).result()
-    print(f'{len(res)}: {res}')
-    require_pairs = []
+    n = 2
+    res = Pairwise(parameters, n).result()
+    # print(f'{len(res)}: {res}')
+    print(f'{len(res)}: ')
     require_pairs_set = set()
-    for i in range(len(parameters)-1):
-        for j in range(i+1, len(parameters)):
-            lst = list(product(parameters[i], parameters[j]))
-            require_pairs += lst
-            for k in lst:
-                require_pairs_set.add(k)
-    print(f'{len(require_pairs)}: {require_pairs}')
-    c = 0
-    for pair in require_pairs:
-        flag = 0
-        for r in res:
-            if all(i in r for i in pair):
-                flag = 1
-        if flag == 0:
-            c += 1
-            print('验证失败！', c, pair)
-    print('验证成功 1')
+
+    idx_l = list(combinations([j for j in range(len(parameters))], n))
+    for j in idx_l:
+        for h in list(product(*[parameters[k] for k in j])):
+            require_pairs_set.add(h)
+    # print(f'{len(require_pairs_set)}: {require_pairs_set}')
+    print(f'{len(require_pairs_set)}: ')
 
     dui = set()
     for i in res:
-        dui |= set(combinations(i, 2))
+        dui |= set(combinations(i, n))
     if require_pairs_set.issubset(dui):
-        print('验证成功 2')
+        print('验证成功！')
     else:
         cha = require_pairs_set - dui
         print(f'验证失败！ {len(cha)}: {cha}')

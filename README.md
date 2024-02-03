@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-
   <h1>Pairwise Testing Algorithm</h1>
 
   <p>Welcome to the Pairwise Testing Algorithm README! This document provides an introduction to the concept of Pairwise testing and its significance in software testing.</p>
@@ -53,3 +52,9 @@
         # Perform testing with the combination of input values
         print(test_case)
   </pre>
+
+  <h2>More Information</h2>
+
+  <p><href>http://pairwise.org</href> has details on this testing methododology.</p>
+</body>
+</html>

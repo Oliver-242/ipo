@@ -9,16 +9,34 @@
 
   <p>This project has already been published on PYPI so just follow the tutorial below. <b>In terminal</b></p>
 
-  <code>pip install nwisepy</code>
+    pip install nwisepy
 
   <p>and then in your <b>python file</b></p>
 
-  <code>from nwisepy import Pairwise</code>
+    from nwisepy import Pairwise
 
-  <p>An example python code and output</p>
+  <p>An example <b>python code</b></p>
 
-  <code></code>
+    from nwisepy import Pairwise
+    
+    parameters = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6]]
   
+    result = Pairwise(parameters, 2).result()
+    for idx, value in enumerate(result):
+      print(f'{idx}: {value}')
+
+  <p>and <b>output</b></p>
+
+    0: ['a', 1, 4]
+    1: ['a', 2, 5]
+    2: ['a', 3, 6]
+    3: ['b', 1, 6]
+    4: ['b', 2, 4]
+    5: ['b', 3, 5]
+    6: ['c', 1, 5]
+    7: ['c', 2, 6]
+    8: ['c', 3, 4]
+
   <h1>Pairwise Testing Algorithm</h1>
 
   <p>Welcome to the Pairwise Testing Algorithm README! This document provides an introduction to the concept of Pairwise testing and its significance in software testing.</p>
@@ -44,7 +62,6 @@
   <p>Here's a simple example of how Pairwise testing can be implemented in a hypothetical software system using Python:</p>
 
   <pre>
-    ```python
     def generate_pairwise(*parameters):
         test_cases = []
         for i, param1 in enumerate(parameters[0]):

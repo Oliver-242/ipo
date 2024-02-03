@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+  <h1>How To Use This Tool</h1>
+
+  <p>This project has already been published on PYPI so just follow the tutorial below. <b>In terminal</b></p>
+
+  <code>pip install nwisepy</code>
+
+  <p>and then in your <b>python file</b></p>
+
+  <code>from nwisepy import Pairwise</code>
+
+  <p>An example python code and output</p>
+
+  <code></code>
+  
   <h1>Pairwise Testing Algorithm</h1>
 
   <p>Welcome to the Pairwise Testing Algorithm README! This document provides an introduction to the concept of Pairwise testing and its significance in software testing.</p>

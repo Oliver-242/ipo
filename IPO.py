@@ -1,3 +1,4 @@
+import functools
 import random
 import time
 from itertools import combinations, product
@@ -8,6 +9,9 @@ class Item:
     An encapsulated data structure that stores each value of each parameter and the index
     of the parameter column in which it resides
     """
+
+    __slots__ = ('__item_id', '__value')
+
     @property
     def id(self):
         return self.__item_id
@@ -33,39 +37,22 @@ class Item:
         return hash((self.__item_id, self.__value))
 
     def __iter__(self):
-        self.__index = 0
-        return self
-
-    def __next__(self):
-        if self.__index >= len(self):
-            raise StopIteration
-        else:
-            item = self.get_item(self.__index)
-            self.__index += 1
-            return item
-
-    def get_item(self, index):
-        if index == 0:
-            return self
-        else:
-            raise IndexError("Item index out of range")
-
-    def __len__(self):
-        return 1
+        return (it for it in [self])
 
 
 class Pairwise:
     """
     A class aims to generate a n-wise testing set using in-parameter-order (IPO) algorithm
     """
-    def __init__(self, parameters, n=2, opt=None):
-        self._n = n
+    def __init__(self, parameters):
+        """
+        param n: represents using n-wise
+        param opt: an optimization option, try different value to reach the smallest pairwise set
+        """
         self.param = parameters
         self._length = len(parameters)
         self.__validate_param(self.param)
-        self.opt = opt
         self.__item_matrix = self.__get_item_matrix(parameters)
-        self.__item_result_list = self.__init_res_list()
         self.__result_list = None
         self.__v_set = set()
 
@@ -73,8 +60,6 @@ class Pairwise:
         if isinstance(parameter, list):
             if len(parameter) < 2:
                 raise ValueError("Length of parameter list should be at least two!")
-            if self._n > self._length:
-                raise ValueError("Length of parameter list should be less than n!")
             for p in parameter:
                 if not p:
                     raise ValueError("Each parameter arrays must have at least one item")
@@ -93,7 +78,24 @@ class Pairwise:
     def __init_res_list(self):
         return list(product(*self.__item_matrix[:self._n]))
 
+    @staticmethod
+    def timer(func):
+        @functools.wraps(func)
+        def func1(self, n=2, opt=None):
+            self._n = n
+            self._opt = opt
+            if self._n > self._length:
+                raise ValueError("Length of parameter list should be less than n!")
+            start = time.time()
+            r = func(self)
+            cost = time.time() - start
+            print(f'{cost}s')
+            return r
+        return func1
+
+    @timer
     def result(self):
+        self.__item_result_list = self.__init_res_list()
         if self._length > self._n:
             self.__find_pairwise()
         self.__convert_to_res(self.__item_result_list)
@@ -143,7 +145,7 @@ class Pairwise:
                 pi_2 = pi_1 & extend
                 if len(pi_2) >= len(pi):
                     pi, select = pi_2, item
-            if self.opt and (self.opt >= len(pi)):
+            if self._opt and (self._opt >= len(pi)):
                 add_to.append(j)
             self.__item_result_list[j] += tuple(select)
             extend -= pi
@@ -183,7 +185,7 @@ if __name__ == "__main__":
     # 9个         3^4
     parameters = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
     # 21个        3^13
-    # parameters = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14], [15, 16, 17], [18, 19, 20], [21, 22, 23], [24, 25, 26], [27, 28, 29], [30, 31, 32], [33, 34, 35], [36, 37, 38]]
+    parameters = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14], [15, 16, 17], [18, 19, 20], [21, 22, 23], [24, 25, 26], [27, 28, 29], [30, 31, 32], [33, 34, 35], [36, 37, 38]]
     # 39个        4^15+3^17+2^29
     # parameters = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15], [16, 17, 18, 19], [20, 21, 22, 23], [24, 25, 26, 27], [28, 29, 30, 31], [32, 33, 34, 35], [36, 37, 38, 39], [40, 41, 42, 43], [44, 45, 46, 47], [48, 49, 50, 51], [52, 53, 54, 55], [56, 57, 58, 59], [60, 61, 62], [63, 64, 65], [66, 67, 68], [69, 70, 71], [72, 73, 74], [75, 76, 77], [78, 79, 80], [81, 82, 83], [84, 85, 86], [87, 88, 89], [90, 91, 92], [93, 94, 95], [96, 97, 98], [99, 100, 101], [102, 103, 104], [105, 106, 107], [108, 109, 110], [111, 112], [113, 114], [115, 116], [117, 118], [119, 120], [121, 122], [123, 124], [125, 126], [127, 128], [129, 130], [131, 132], [133, 134], [135, 136], [137, 138], [139, 140], [141, 142], [143, 144], [145, 146], [147, 148], [149, 150], [151, 152], [153, 154], [155, 156], [157, 158], [159, 160], [161, 162], [163, 164], [165, 166], [167, 168]]
     # 29个        4^1+3^39+2^35
@@ -191,14 +193,11 @@ if __name__ == "__main__":
     # 16个        2^100
     # parameters = [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11], [12, 13], [14, 15], [16, 17], [18, 19], [20, 21], [22, 23], [24, 25], [26, 27], [28, 29], [30, 31], [32, 33], [34, 35], [36, 37], [38, 39], [40, 41], [42, 43], [44, 45], [46, 47], [48, 49], [50, 51], [52, 53], [54, 55], [56, 57], [58, 59], [60, 61], [62, 63], [64, 65], [66, 67], [68, 69], [70, 71], [72, 73], [74, 75], [76, 77], [78, 79], [80, 81], [82, 83], [84, 85], [86, 87], [88, 89], [90, 91], [92, 93], [94, 95], [96, 97], [98, 99], [100, 101], [102, 103], [104, 105], [106, 107], [108, 109], [110, 111], [112, 113], [114, 115], [116, 117], [118, 119], [120, 121], [122, 123], [124, 125], [126, 127], [128, 129], [130, 131], [132, 133], [134, 135], [136, 137], [138, 139], [140, 141], [142, 143], [144, 145], [146, 147], [148, 149], [150, 151], [152, 153], [154, 155], [156, 157], [158, 159], [160, 161], [162, 163], [164, 165], [166, 167], [168, 169], [170, 171], [172, 173], [174, 175], [176, 177], [178, 179], [180, 181], [182, 183], [184, 185], [186, 187], [188, 189], [190, 191], [192, 193], [194, 195], [196, 197], [198, 199]]
     # 230个       10^20
-    parameters = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], [20, 21, 22, 23, 24, 25, 26, 27, 28, 29], [30, 31, 32, 33, 34, 35, 36, 37, 38, 39], [40, 41, 42, 43, 44, 45, 46, 47, 48, 49], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], [60, 61, 62, 63, 64, 65, 66, 67, 68, 69], [70, 71, 72, 73, 74, 75, 76, 77, 78, 79], [80, 81, 82, 83, 84, 85, 86, 87, 88, 89], [90, 91, 92, 93, 94, 95, 96, 97, 98, 99], [100, 101, 102, 103, 104, 105, 106, 107, 108, 109], [110, 111, 112, 113, 114, 115, 116, 117, 118, 119], [120, 121, 122, 123, 124, 125, 126, 127, 128, 129], [130, 131, 132, 133, 134, 135, 136, 137, 138, 139], [140, 141, 142, 143, 144, 145, 146, 147, 148, 149], [150, 151, 152, 153, 154, 155, 156, 157, 158, 159], [160, 161, 162, 163, 164, 165, 166, 167, 168, 169], [170, 171, 172, 173, 174, 175, 176, 177, 178, 179], [180, 181, 182, 183, 184, 185, 186, 187, 188, 189], [190, 191, 192, 193, 194, 195, 196, 197, 198, 199]]
+    # parameters = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], [20, 21, 22, 23, 24, 25, 26, 27, 28, 29], [30, 31, 32, 33, 34, 35, 36, 37, 38, 39], [40, 41, 42, 43, 44, 45, 46, 47, 48, 49], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], [60, 61, 62, 63, 64, 65, 66, 67, 68, 69], [70, 71, 72, 73, 74, 75, 76, 77, 78, 79], [80, 81, 82, 83, 84, 85, 86, 87, 88, 89], [90, 91, 92, 93, 94, 95, 96, 97, 98, 99], [100, 101, 102, 103, 104, 105, 106, 107, 108, 109], [110, 111, 112, 113, 114, 115, 116, 117, 118, 119], [120, 121, 122, 123, 124, 125, 126, 127, 128, 129], [130, 131, 132, 133, 134, 135, 136, 137, 138, 139], [140, 141, 142, 143, 144, 145, 146, 147, 148, 149], [150, 151, 152, 153, 154, 155, 156, 157, 158, 159], [160, 161, 162, 163, 164, 165, 166, 167, 168, 169], [170, 171, 172, 173, 174, 175, 176, 177, 178, 179], [180, 181, 182, 183, 184, 185, 186, 187, 188, 189], [190, 191, 192, 193, 194, 195, 196, 197, 198, 199]]
 
     n = 2
-    opt = 12
-    start_time = time.time()
-    res = Pairwise(parameters, n, opt).result()
-    end_time = time.time()
-    print(f'{end_time-start_time}s')
+    opt = 8
+    res = Pairwise(parameters).result(n, opt)
     print(f'{len(res)}: ')
     for i, j in enumerate(res):
         print(f'{i+1}: {j}')
